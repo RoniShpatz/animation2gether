@@ -1,0 +1,14 @@
+# Ignore virtual environment directories
+venv/
+
+# Ignore Python cache files
+__pycache__/
+
+# Ignore Django staticfiles directory
+staticfiles/
+
+# Ignore local environment file
+.env
+
+# Ignore macOS files
+.DS_Store
