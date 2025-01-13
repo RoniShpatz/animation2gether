@@ -1,0 +1,48 @@
+
+{% extends "game/base_generic.html" %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<h1>Hello  {{ user.username|capfirst }}</h1>
+<div class="artwork-container">
+    {% if error %}
+        <div class="error-message">
+            <p>{{ error }}</p>
+        </div>
+    {% else %}
+        {% if artwork.image_url %}
+            <img src="{{ artwork.image_url }}" alt="{{ artwork.title }}" class="artwork-image">
+        {% endif %}
+        
+        <h1>{{ artwork.title }}</h1>
+        
+        {% if artwork.artist %}
+            <h2>By {{ artwork.artist }}</h2>
+        {% endif %}
+        
+        {% if artwork.date %}
+            <p><strong>Date:</strong> {{ artwork.date }}</p>
+        {% endif %}
+        
+        {% if artwork.medium %}
+            <p><strong>Medium:</strong> {{ artwork.medium }}</p>
+        {% endif %}
+        
+        {% if artwork.description %}
+            <p><strong>Description:</strong> {{ artwork.description }}</p>
+        {% endif %}
+        
+        {% if artwork.dimensions %}
+            <p><strong>Dimensions:</strong> {{ artwork.dimensions }}</p>
+        {% endif %}
+        
+        {% if artwork.credit_line %}
+            <p><em>{{ artwork.credit_line }}</em></p>
+        {% endif %}
+        
+        <form method="GET">
+            <button type="submit">Get Another Artwork</button>
+        </form>
+    {% endif %}
+</div>
+{% endblock %}

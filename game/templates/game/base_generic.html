@@ -1,0 +1,57 @@
+
+<html lang="en">
+  <head>
+    {% block title %}
+      <title>Animation</title>
+    {% endblock %}
+    <meta charset="utf-8" />
+    
+   
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    {% load static %}
+    <link rel="icon" href="{% static 'favicon.ico' %}" type="image/x-icon">
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}" />
+  </head>
+  <body>
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-sm-2">
+          {% block sidebar %}
+          <nav >
+            <div >
+                <!-- Navigation Links -->
+                <div class="collapse" >
+                    <ul class="navbar-nav">
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'game:index' %}">Let's play!</a>
+                        </li>
+        
+                    <!-- Authentication Links -->
+                    <ul class="navbar-nav ms-auto">
+                        {% if user.is_authenticated %}
+                            <li class="nav-item">
+                                <a href="#" class="nav-link" onclick="document.getElementById('logout-form').submit()">
+                                    Logout
+                                </a>
+                                <form id="logout-form" method="POST" action="{% url 'users:logout' %}" class="d-none">
+                                    {% csrf_token %}
+                                </form>
+                            </li>
+                        {% else %}
+                            <li class="nav-item">
+                                <a href="{% url 'users:login' %}" class="nav-link">Login</a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+        </nav>
+          {% endblock %}
+        </div>
+        <div class="col-sm-12 ">{% block content %}
+          {% endblock %}</div>
+      </div>
+    </div>
+  </body>
+</html>

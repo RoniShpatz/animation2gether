@@ -14,6 +14,7 @@ from pathlib import Path
 import os
 from dotenv import load_dotenv
 import dj_database_url
+from django.contrib.messages import constants as messages
 
 load_dotenv()
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -41,10 +42,20 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'game',
-    'blog',
-    'users',
+    'game.apps.GameConfig',
+    'blog.apps.BlogConfig',
+    'users.apps.UsersConfig',
+    'crispy_forms',
+    'cloudinary',
+    'cloudinary_storage',
+    'crispy_bootstrap4',
+    'django_extensions',
+    'rest_framework',
+
 ]
+
+CRISPY_TEMPLATE_PACK = 'bootstrap5'
+CRISPY_TEMPLATE_PACK = 'bootstrap4'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -61,7 +72,7 @@ ROOT_URLCONF = 'animation2gether.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -118,6 +129,14 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': 'dv8uqmrry',
+    'API_KEY': os.environ['API_KEY'],
+    'API_SECRET': os.environ['API_SECRET'],
+}
+
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
 
@@ -129,6 +148,9 @@ USE_I18N = True
 
 USE_TZ = True
 
+LOGIN_URL = 'users:login'  
+LOGIN_REDIRECT_URL = 'game:index'  
+LOGOUT_REDIRECT_URL = 'users:login'  
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
@@ -139,3 +161,15 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+MESSAGE_TAGS = {
+    messages.DEBUG: 'alert-info',
+    messages.INFO: 'alert-info',
+    messages.SUCCESS: 'alert-success',
+    messages.WARNING: 'alert-warning',
+    messages.ERROR: 'alert-danger',
+}
+
+LOGIN_URL = 'users:login'
+LOGIN_REDIRECT_URL = 'index'
+LOGOUT_REDIRECT_URL = 'users:login'

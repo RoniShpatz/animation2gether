@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
-
+from cloudinary_storage.storage import MediaCloudinaryStorage
 # Create your models here.
 
 class Animations(models.Model):
@@ -16,6 +16,6 @@ class Animations(models.Model):
         null=True,
         blank=True
     )
-    # animation= 
-    # class Meta:
-    #     ordering = ['-date']
+    animation=models.ImageField(storage=MediaCloudinaryStorage(), null=True, blank=True)
+    class Meta:
+        ordering = ['-date']
