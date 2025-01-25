@@ -1,0 +1,212 @@
+{% extends "game/base_generic.html" %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+
+{% if messages %}
+<ul class="messages">
+    {% for message in messages %}
+    <li {% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+
+<h1>Paint:</h1>
+<body>
+    <div class="paint-container">
+        <form id="FrameForm" method="POST" action="{% url 'game:save_frame' %}" enctype="multipart/form-data">
+            {% csrf_token %}
+            <p>Animation name: {{title}}</p>
+            {% if not title %}
+            <input type="text" id="title" name="title" placeholder="Enter Animation title" required>
+        {% else %}
+            <input type="hidden" id="title" name="title" value="{{ title }}">
+        {% endif %}
+            <input type="hidden" name="game-id" value="{{ game_id }}">
+            <div class="controls">
+                <input type="color" id="colorPicker" value="#000000">
+                <input type="range" id="brushSize" min="1" max="50" value="5">
+                <span id="brushSizeLabel" >Size: 5px</span>
+                <span id="eraserBtn" style="color: rgb(63, 165, 42);">Paint</span>
+                <span id="clearBtn" style="color: brown;">Clear Canvas</span>
+            </div>
+            <div>
+                <button type="button" id="saveBtn">Save and send Image</button>
+            </div>
+            <div id="message" class="message" style="display: none;"></div>
+            <canvas id="paintCanvas" width="800" height="600"></canvas>
+        </form>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('paintCanvas');
+        const ctx = canvas.getContext('2d');
+        const colorPicker = document.getElementById('colorPicker');
+        const brushSize = document.getElementById('brushSize');
+        const brushSizeLabel = document.getElementById('brushSizeLabel');
+        const eraserBtn = document.getElementById('eraserBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const saveBtn = document.getElementById('saveBtn');
+        // Initialize canvas with white background
+        ctx.fillStyle = 'white';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        let isDrawing = false;
+        let isErasing = false;
+        let lastX = 0;
+        let lastY = 0;
+
+        // Update brush size label
+        brushSize.addEventListener('input', function() {
+            brushSizeLabel.textContent = `Size: ${this.value}px`;
+        });
+
+        // Toggle eraser
+        eraserBtn.addEventListener('click', function() {
+            if (!isErasing) {
+                eraserBtn.innerText = "Erase";
+                this.classList.add('active');
+            } else {
+                eraserBtn.innerText = "Paint";
+                this.classList.remove('active');
+            }
+            isErasing = !isErasing;
+        });
+
+        // Clear canvas
+        clearBtn.addEventListener('click', function() {
+            ctx.fillStyle = 'white';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        });
+
+        //convert the canva fo image file
+        function canvasToFile(canvas, title) {
+            // Get the base64 data from canvas
+            return new Promise((resolve) => {
+                canvas.toBlob((blob) => {
+                    // Create a File object
+                    const file = new File([blob], `${title}.png`, { type: 'image/png' });
+                    resolve(file);
+                }, 'image/png');
+            });
+        }
+        //crf solve function
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    // Check if this cookie string begins with the name we want
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+        //save frame and send to backend
+        saveBtn.addEventListener('click', async function() {
+            
+            const title = document.getElementById('title').value;
+            const gameId = document.querySelector('input[name="game-id"]').value;
+            const file = await canvasToFile(canvas, title);
+            const formData = new FormData();
+            formData.append('title', title);
+            formData.append('game-id', gameId);
+            formData.append('image', file);
+
+            const csrftoken = getCookie('csrftoken');
+
+            try {
+                const response = await fetch('/save-frame/', {
+                method: 'POST',
+                headers: {
+                'X-CSRFToken': csrftoken 
+                },
+                body: formData
+                });
+                if (response.redirected) {
+                    window.location.href = response.url;
+                    return;
+                }
+
+                const data = await response.json();
+                console.log('Response:', data);
+                
+                // If there's a redirect URL in the response data, use it
+                if (data.redirect_url) {
+                    window.location.href = data.redirect_url;
+                }
+            } catch (error) {
+            console.error('Error:', error);
+            }
+            });
+
+        // Drawing functions
+        function draw(e) {
+            if (!isDrawing) return;
+
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            ctx.lineWidth = brushSize.value;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+
+            if (isErasing) {
+                ctx.strokeStyle = 'white';
+            } else {
+                ctx.strokeStyle = colorPicker.value;
+            }
+
+            ctx.beginPath();
+            ctx.moveTo(lastX, lastY);
+            ctx.lineTo(x, y);
+            ctx.stroke();
+
+            [lastX, lastY] = [x, y];
+        }
+
+        // Event listeners for mouse interactions
+        canvas.addEventListener('mousedown', (e) => {
+            isDrawing = true;
+            const rect = canvas.getBoundingClientRect();
+            [lastX, lastY] = [e.clientX - rect.left, e.clientY - rect.top];
+        });
+
+        canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('mouseup', () => isDrawing = false);
+        canvas.addEventListener('mouseout', () => isDrawing = false);
+
+        // Prevent default touch behavior to avoid scrolling while drawing
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            const touch = e.touches[0];
+            const mouseEvent = new MouseEvent('mousedown', {
+                clientX: touch.clientX,
+                clientY: touch.clientY
+            });
+            canvas.dispatchEvent(mouseEvent);
+        }, { passive: false });
+
+        canvas.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            const touch = e.touches[0];
+            const mouseEvent = new MouseEvent('mousemove', {
+                clientX: touch.clientX,
+                clientY: touch.clientY
+            });
+            canvas.dispatchEvent(mouseEvent);
+        }, { passive: false });
+
+        canvas.addEventListener('touchend', () => {
+            const mouseEvent = new MouseEvent('mouseup', {});
+            canvas.dispatchEvent(mouseEvent);
+        });
+    </script>
+
+
+{% endblock %}

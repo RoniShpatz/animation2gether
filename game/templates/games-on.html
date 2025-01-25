@@ -1,0 +1,70 @@
+
+{% extends "game/base_generic.html" %}
+{% load crispy_forms_tags %}
+
+{% if messages %}
+<ul class="messages">
+    {% for message in messages %}
+    <li {% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+
+{% block content %}
+<h1>Pending Games {{ user.username|capfirst }}</h1>
+
+
+
+{% if pending_games %}
+    <ul>
+        {% for game in pending_games %}
+            <li>
+                {{ game.user.username }} wants to play with you.
+                <form method="post" action="{% url 'game:accept_game' %}">
+                    {% csrf_token %}
+                    <input type="hidden" value="{{ game.id }}" name="game_id">
+                    <button type="submit" name="accept">Accept</button>
+                    <button type="submit" name="decline">Decline</button>
+                </form>
+            </li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p>No pending game invitations.</p>
+{% endif %}
+
+<h2>Games Waiting for Your Response</h2>
+{% if animation_waiting_respone %}
+    <ul>
+        {% for message in animation_waiting_respone %}
+            <li>
+                <p>Game ID: {{ message.game_id }}</p>
+                <p>Frame Number: {{ message.last_frame_number }}</p>
+                <p>From: {{ message.sender_username }}</p>
+                <form method="post" action="{% url 'game:respond' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="message_id" value="{{ message.id }}">
+                    <button type="submit" name="Animate">Animate</button>
+                </form>
+            </li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p>No games are waiting for your response.</p>
+{% endif %}
+
+<h2>Games Waiting for Others to Respond</h2>
+{% if wait_for_respone %}
+    <ul>
+        {% for message in wait_for_respone %}
+            <li>
+                <p>Game ID: {{ message.game_id }}</p>
+                <p>Frame Number: {{ message.last_frame_number }}</p>
+                <p>To: {{ message.recipient_username  }}</p>
+            </li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p>No games are waiting for others to respond.</p>
+{% endif %}
+{% endblock %}

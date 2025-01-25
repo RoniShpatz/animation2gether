@@ -11,10 +11,13 @@
 
     {% load static %}
     <link rel="icon" href="{% static 'favicon.ico' %}" type="image/x-icon">
-    <link rel="stylesheet" href="{% static 'css/styles.css' %}" />
+    <link rel="stylesheet" href="{% static 'game/css/style.css' %}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Raleway:ital,wght@0,100..900;1,100..900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
   </head>
   <body>
-    <div class="container-fluid">
+    <div class="container-nav">
       <div class="row">
         <div class="col-sm-2">
           {% block sidebar %}
@@ -24,11 +27,14 @@
                 <div class="collapse" >
                     <ul class="navbar-nav">
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'game:index' %}">Let's play!</a>
+                            <a class="nav-link" href="{% url 'game:index' %}">New Game!</a> 
+                        </li>
+                        <li>
+                          <a href="{% url 'game:games_on' %}">Games Inbox</a>
                         </li>
         
                     <!-- Authentication Links -->
-                    <ul class="navbar-nav ms-auto">
+                    
                         {% if user.is_authenticated %}
                             <li class="nav-item">
                                 <a href="#" class="nav-link" onclick="document.getElementById('logout-form').submit()">
@@ -43,7 +49,7 @@
                                 <a href="{% url 'users:login' %}" class="nav-link">Login</a>
                             </li>
                         {% endif %}
-                    </ul>
+                   
                 </div>
             </div>
         </nav>

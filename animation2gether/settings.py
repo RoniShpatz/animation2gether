@@ -155,8 +155,8 @@ LOGOUT_REDIRECT_URL = 'users:login'
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
-STATIC_URL = 'static/'
-
+STATIC_URL = '/static/'
+STATICFILES_DIRS = [BASE_DIR / 'game'/'static']
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
@@ -173,3 +173,5 @@ MESSAGE_TAGS = {
 LOGIN_URL = 'users:login'
 LOGIN_REDIRECT_URL = 'index'
 LOGOUT_REDIRECT_URL = 'users:login'
+
+SESSION_ENGINE = "django.contrib.sessions.backends.db"

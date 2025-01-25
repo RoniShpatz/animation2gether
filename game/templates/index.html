@@ -2,6 +2,14 @@
 {% extends "game/base_generic.html" %}
 {% load crispy_forms_tags %}
 
+{% if messages %}
+<ul class="messages">
+    {% for message in messages %}
+    <li {% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+
 {% block content %}
 <h1>Hello  {{ user.username|capfirst }}</h1>
 <div class="artwork-container">
@@ -20,28 +28,19 @@
             <h2>By {{ artwork.artist }}</h2>
         {% endif %}
         
-        {% if artwork.date %}
-            <p><strong>Date:</strong> {{ artwork.date }}</p>
-        {% endif %}
+
         
-        {% if artwork.medium %}
-            <p><strong>Medium:</strong> {{ artwork.medium }}</p>
-        {% endif %}
-        
-        {% if artwork.description %}
-            <p><strong>Description:</strong> {{ artwork.description }}</p>
-        {% endif %}
-        
-        {% if artwork.dimensions %}
-            <p><strong>Dimensions:</strong> {{ artwork.dimensions }}</p>
-        {% endif %}
-        
-        {% if artwork.credit_line %}
-            <p><em>{{ artwork.credit_line }}</em></p>
-        {% endif %}
-        
-        <form method="GET">
+        <form method="POST">
+            {% csrf_token %}
             <button type="submit">Get Another Artwork</button>
+            <label for="userSelect">Select User:</label>
+            <select name="username" id="userSelect" required>
+                <option value="" disabled selected>Select a user</option>  
+                {% for user in usernames %}
+                    <option value="{{ user}}">{{ user }}</option>
+                {% endfor %}
+            </select>
+            <button type="submit" name="start">Start</button>
         </form>
     {% endif %}
 </div>

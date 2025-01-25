@@ -25,7 +25,7 @@ def signup(request):
 
 class CustomLoginView(LoginView):
     form_class = LoginForm
-    template_name = 'users/login.html'
+    template_name = 'registration/login.html'
 
 
 def debug_template_path(request):
