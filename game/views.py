@@ -87,6 +87,11 @@ def create_game(request):
 
 @login_required
 def animate(request, game_id):
+    if not request.META.get('HTTP_REFERER'):
+        storage = messages.get_messages(request)
+        storage.used = True
+    storage = messages.get_messages(request)
+    storage.used = True
     temp_frame = TempFrame.objects.filter(game_id=game_id).order_by('-frame_number').first()
     animation_title = temp_frame.animation_title if temp_frame else None
     file = None
@@ -109,66 +114,71 @@ def animate(request, game_id):
 @login_required
 def save_frame(request):
     if request.method == 'POST':
-        current_game_id = request.POST.get('game-id', "").strip()
-        
-        active_game = ActiveGame.objects.filter(id=current_game_id).first()
+        if request.POST.get('intentional_save', 'false') == 'true':
+    
+            current_game_id = request.POST.get('game-id', "").strip()
+            
+            active_game = ActiveGame.objects.filter(id=current_game_id).first()
 
-        if not active_game:
-            messages.error(request, "Game not found!")
-            return redirect('game:games_on')
-        first_frame = TempFrame.objects.filter(game_id=current_game_id, frame_number=1).first()
-       
-        last_frame = TempFrame.objects.filter(game_id=current_game_id).order_by('-frame_number').first()
+            if not active_game:
+                messages.error(request, "Game not found!")
+                return redirect('game:games_on')
+            first_frame = TempFrame.objects.filter(game_id=current_game_id, frame_number=1).first()
         
-        print(last_frame)
-        if last_frame:
-            next_frame_number = last_frame.frame_number + 1
-            animation_title = first_frame.animation_title
-            user_sender = last_frame.user_share_with
-            user_recipient = last_frame.user
+            last_frame = TempFrame.objects.filter(game_id=current_game_id).order_by('-frame_number').first()
             
-        else: 
-            next_frame_number = 1
-            animation_title = request.POST.get('title', 'Untitled Animation').strip()
-            user_sender = active_game.user
-            user_recipient = active_game.user_share
+           
+            if last_frame:
+                next_frame_number = last_frame.frame_number + 1
+                animation_title = first_frame.animation_title
+                user_sender = last_frame.user_share_with
+                user_recipient = last_frame.user
+                
+            else: 
+                next_frame_number = 1
+                animation_title = request.POST.get('title', 'Untitled Animation').strip()
+                user_sender = active_game.user
+                user_recipient = active_game.user_share
+                
+        
             
-       
-        
-        new_frame = TempFrame(
-            user=request.user,
-            animation_title=animation_title,
-            frame_number=next_frame_number,
-            game_id=active_game,
-            user_share_with=user_recipient
+            new_frame = TempFrame(
+                user=request.user,
+                animation_title=animation_title,
+                frame_number=next_frame_number,
+                game_id=active_game,
+                user_share_with=user_recipient
+                
+            )                  
             
-        )                  
-        
-        if request.FILES.get('image'):
-            image_file = request.FILES['image']
-            new_frame.file.save(
-                f"frame_{request.user.id}_{next_frame_number}_{now().strftime('%Y%m%d_%H%M%S')}.jpg", 
-                image_file
-                )
-        new_frame.save()
-        new_massage = MessageGame(
-                        sender=user_sender,
-                        recipient=user_recipient,
-                        temp_frame=new_frame,
-                        game_id=active_game,
-                        is_read= False, 
-                        )
-        new_massage.save()
-        
-        messages.success(request, 'Frame saved successfully!')
-
-        return redirect('game:games_on')
+            if request.FILES.get('image'):
+                image_file = request.FILES['image']
+                new_frame.file.save(
+                    f"frame_{request.user.id}_{next_frame_number}_{now().strftime('%Y%m%d_%H%M%S')}.jpg", 
+                    image_file
+                    )
+                new_frame.save()
+                new_massage = MessageGame(
+                                sender=user_sender,
+                                recipient=user_recipient,
+                                temp_frame=new_frame,
+                                game_id=active_game,
+                                is_read= False, 
+                                )
+                new_massage.save()
+                
+                messages.success(request, 'Frame saved successfully!')
+                return redirect('game:games_on')
+            else:
+                 messages.error(request, 'Failed to save frame. Please check your inputs.')
         
     return redirect('game:games_on') 
 
 
 @login_required
 def games_on(request):
+    storage = messages.get_messages(request)
+    storage.used = True 
     pending_games= ActiveGame.objects.filter(
         user_share=request.user,
         is_accepted=False
@@ -267,39 +277,6 @@ def accept_game(request):
     return redirect('game:games_on')
 
 
-@login_required
-def respond_game(request):
-    if request.method == 'POST':
-        game_id = request.POST.get("game_id", "").strip()
-        message_id = request.POST.get("message_id", "").strip()
-        action = request.POST.get("action", "").strip()
-
-        if not game_id or not message_id or not action:
-            messages.error(request, "Invalid game ID, message ID, or action.")
-            return redirect('game:games_on')
-
-        # Fetch the game and message objects
-        message = MessageGame.objects.filter(id=message_id).first()
-        if message:
-            print(message)
-            message.is_read = True
-            message.save()
-        current_game = ActiveGame.objects.filter(id=game_id).first()
-        print(message, current_game)
-        if current_game:
-            if action == "accept":
-                current_game.is_accepted = True
-                current_game.save()
-                messages.success(request, "Game accepted successfully!")
-                return redirect('game:animate', game_id=game_id)
-            elif action == "decline":
-                current_game.is_accepted = False
-                current_game.save()
-                messages.success(request, "Game declined successfully!")
-                return redirect('game:games_on')
-
-    messages.error(request, "Invalid request.")
-    return redirect('game:games_on')
 
 @login_required
 def respond(request):
@@ -307,7 +284,7 @@ def respond(request):
         massage_id = request.POST.get("message_id").strip()
         game_id = request.POST.get("game-id").strip()
         current_massage = MessageGame.objects.filter(id=massage_id).first()
-        print(current_massage)
+     
         if not current_massage:
             messages.error(request, "No massage found.")
             return redirect('game:games_on')
@@ -316,3 +293,9 @@ def respond(request):
         return redirect('game:animate', game_id=game_id)
     
     return redirect('game:games_on')
+
+@login_required
+def finish_animation(request):
+
+
+    return redirect('users:profile')

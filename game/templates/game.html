@@ -3,13 +3,6 @@
 
 {% block content %}
 
-{% if messages %}
-<ul class="messages">
-    {% for message in messages %}
-    <li {% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-    {% endfor %}
-</ul>
-{% endif %}
 
 <h1>Paint:</h1>
 <body>
@@ -42,6 +35,11 @@
             <canvas id="paintCanvas" width="800" height="600">
 
             </canvas>
+        </form>
+        <form method="post" action="{% url 'game:finish' %}">
+            {% csrf_token %}
+            <input type="hidden" name="game-id" value="{{ message.game_id }}">
+            <button type="submit" name="Finish">Finish Animation</button>
         </form>
     </div>
 
@@ -119,11 +117,12 @@
         saveBtn.addEventListener('click', async function() {
             this.disabled = true;
             this.textContent = 'Saving...';
-            
+
             const title = document.getElementById('title').value;
             const gameId = document.querySelector('input[name="game-id"]').value;
             const file = await canvasToFile(canvas, title);
             const formData = new FormData();
+            formData.append('intentional_save', 'true');
             formData.append('title', title);
             formData.append('game-id', gameId);
             formData.append('image', file);
@@ -143,8 +142,7 @@
                     return;
                 }
 
-                const data = await response.json();
-                console.log('Response:', data);
+
                 
                 // If there's a redirect URL in the response data, use it
                 if (data.redirect_url) {
@@ -152,6 +150,9 @@
                 }
             } catch (error) {
             console.error('Error:', error);
+            } finally {
+                this.disabled = false;
+                this.textContent = 'Save'
             }
             });
 

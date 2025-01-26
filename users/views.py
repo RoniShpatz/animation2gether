@@ -34,3 +34,9 @@ def debug_template_path(request):
         return render(request, 'users/login.html')
     except Exception as e:
         return render(request, 'error.html', {'error': str(e)})
+    
+
+def profile(request):
+
+
+    return render('profile.html')

@@ -47,6 +47,11 @@
                     <input type="hidden" name="game-id" value="{{ message.game_id }}">
                     <button type="submit" name="Animate">Animate</button>
                 </form>
+                <form method="post" action="{% url 'game:finish' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="game-id" value="{{ message.game_id }}">
+                    <button type="submit" name="Finish">Finish</button>
+                </form>
             </li>
         {% endfor %}
     </ul>
