@@ -23,7 +23,6 @@ class Animations(models.Model):
         ordering = ['-date']
 
 
-
 class ActiveGame(models.Model):
     id = models.AutoField(primary_key=True)
     user = models.ForeignKey(

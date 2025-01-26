@@ -30,7 +30,7 @@
         
 
         
-        <form method="POST">
+        <form method="POST" action="{% url 'game:create_game' %}">
             {% csrf_token %}
             <button type="submit">Get Another Artwork</button>
             <label for="userSelect">Select User:</label>

@@ -44,6 +44,7 @@
                 <form method="post" action="{% url 'game:respond' %}">
                     {% csrf_token %}
                     <input type="hidden" name="message_id" value="{{ message.id }}">
+                    <input type="hidden" name="game-id" value="{{ message.game_id }}">
                     <button type="submit" name="Animate">Animate</button>
                 </form>
             </li>
