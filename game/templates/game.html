@@ -44,204 +44,225 @@
     </div>
 
     <script>
-        const canvas = document.getElementById('paintCanvas');
-        const ctx = canvas.getContext('2d');
-        const colorPicker = document.getElementById('colorPicker');
-        const brushSize = document.getElementById('brushSize');
-        const brushSizeLabel = document.getElementById('brushSizeLabel');
-        const eraserBtn = document.getElementById('eraserBtn');
-        const clearBtn = document.getElementById('clearBtn');
-        const saveBtn = document.getElementById('saveBtn');
-        const prevFileUrl = "{{ prev_file.url }}"; 
+            const canvas = document.getElementById('paintCanvas');
+            const ctx = canvas.getContext('2d');
+            const colorPicker = document.getElementById('colorPicker');
+            const brushSize = document.getElementById('brushSize');
+            const brushSizeLabel = document.getElementById('brushSizeLabel');
+            const eraserBtn = document.getElementById('eraserBtn');
+            const clearBtn = document.getElementById('clearBtn');
+            const saveBtn = document.getElementById('saveBtn');
+            const prevFileUrl = "{{ prev_file.url }}"; 
 
-  
+            let drawingLayer;
+            let drawingCtx;
+            let isDrawing = false;
+            let isErasing = false;
+            let lastX = 0;
+            let lastY = 0;
 
-        let isDrawing = false;
-        let isErasing = false;
-        let lastX = 0;
-        let lastY = 0;
-
-        // Update brush size label
-        brushSize.addEventListener('input', function() {
-            brushSizeLabel.textContent = `Size: ${this.value}px`;
-        });
-
-        // Toggle eraser
-        eraserBtn.addEventListener('click', function() {
-            if (!isErasing) {
-                eraserBtn.innerText = "Erase";
-                this.classList.add('active');
-            } else {
-                eraserBtn.innerText = "Paint";
-                this.classList.remove('active');
+            // Create a separate canvas for drawing
+            function setupDrawingLayer() {
+                drawingLayer = document.createElement('canvas');
+                drawingLayer.width = canvas.width;
+                drawingLayer.height = canvas.height;
+                drawingCtx = drawingLayer.getContext('2d');
+                drawingCtx.fillStyle = 'transparent';
+                drawingCtx.fillRect(0, 0, drawingLayer.width, drawingLayer.height);
             }
-            isErasing = !isErasing;
-        });
 
-        // Clear canvas
-        clearBtn.addEventListener('click', function() {
-            ctx.fillStyle = 'white';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            drawPreviousFrame(); 
-        });
-
-        //convert the canva fo image file
-        function canvasToFile(canvas, title) {
-            // Get the base64 data from canvas
-            return new Promise((resolve) => {
-                canvas.toBlob((blob) => {
-                    // Create a File object
-                    const file = new File([blob], `${title}.png`, { type: 'image/png' });
-                    resolve(file);
-                }, 'image/png');
+            // Update brush size label
+            brushSize.addEventListener('input', function() {
+                brushSizeLabel.textContent = `Size: ${this.value}px`;
             });
-        }
+
+            // Toggle eraser
+            eraserBtn.addEventListener('click', function() {
+                if (!isErasing) {
+                    eraserBtn.innerText = "Erase";
+                    this.classList.add('active');
+                } else {
+                    eraserBtn.innerText = "Paint";
+                    this.classList.remove('active');
+                }
+                isErasing = !isErasing;
+            });
+
+            // Clear canvas
+            clearBtn.addEventListener('click', function() {
+                drawingCtx.clearRect(0, 0, drawingLayer.width, drawingLayer.height);
+                refreshCanvas();
+            });
+
+            function refreshCanvas() {
+                ctx.fillStyle = 'white';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                drawPreviousFrame();
+                ctx.drawImage(drawingLayer, 0, 0);
+            }
+
+            function drawPreviousFrame() {
+                if (prevFileUrl) {
+                    const backgroundImage = new Image();
+                    backgroundImage.crossOrigin = 'Anonymous';
+                    backgroundImage.src = prevFileUrl;
+                    
+                    backgroundImage.onload = function () {
+                        ctx.globalAlpha = 0.1;
+                        ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
+                        ctx.globalAlpha = 1.0;
+                        ctx.drawImage(drawingLayer, 0, 0);
+                    };
+                }
+            }
+
+            function draw(e) {
+                if (!isDrawing) return;
+
+                const rect = canvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+
+                drawingCtx.lineWidth = brushSize.value;
+                drawingCtx.lineCap = 'round';
+                drawingCtx.lineJoin = 'round';
+
+                if (isErasing) {
+                    drawingCtx.globalCompositeOperation = 'destination-out';
+                } else {
+                    drawingCtx.globalCompositeOperation = 'source-over';
+                    drawingCtx.strokeStyle = colorPicker.value;
+                }
+
+                drawingCtx.beginPath();
+                drawingCtx.moveTo(lastX, lastY);
+                drawingCtx.lineTo(x, y);
+                drawingCtx.stroke();
+
+                refreshCanvas();
+
+                [lastX, lastY] = [x, y];
+            }
+
+            function initializeCanvasBackground() {
+                setupDrawingLayer();
+                ctx.fillStyle = 'white';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                drawPreviousFrame();
+            }
+
+            // Event listeners for mouse interactions
+            canvas.addEventListener('mousedown', (e) => {
+                isDrawing = true;
+                const rect = canvas.getBoundingClientRect();
+                [lastX, lastY] = [e.clientX - rect.left, e.clientY - rect.top];
+            });
+
+            canvas.addEventListener('mousemove', draw);
+            canvas.addEventListener('mouseup', () => isDrawing = false);
+            canvas.addEventListener('mouseout', () => isDrawing = false);
+
+            // Touch event handlers
+            canvas.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                const touch = e.touches[0];
+                const mouseEvent = new MouseEvent('mousedown', {
+                    clientX: touch.clientX,
+                    clientY: touch.clientY
+                });
+                canvas.dispatchEvent(mouseEvent);
+            }, { passive: false });
+
+            canvas.addEventListener('touchmove', (e) => {
+                e.preventDefault();
+                const touch = e.touches[0];
+                const mouseEvent = new MouseEvent('mousemove', {
+                    clientX: touch.clientX,
+                    clientY: touch.clientY
+                });
+                canvas.dispatchEvent(mouseEvent);
+            }, { passive: false });
+
+            canvas.addEventListener('touchend', () => {
+                const mouseEvent = new MouseEvent('mouseup', {});
+                canvas.dispatchEvent(mouseEvent);
+            });
+
+            // Initialize the canvas
+            initializeCanvasBackground();
+            
         //crf solve function
-        function getCookie(name) {
-            let cookieValue = null;
-            if (document.cookie && document.cookie !== '') {
-                const cookies = document.cookie.split(';');
-                for (let i = 0; i < cookies.length; i++) {
-                    const cookie = cookies[i].trim();
-                    // Check if this cookie string begins with the name we want
-                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                        break;
+            function getCookie(name) {
+                let cookieValue = null;
+                if (document.cookie && document.cookie !== '') {
+                    const cookies = document.cookie.split(';');
+                    for (let i = 0; i < cookies.length; i++) {
+                        const cookie = cookies[i].trim();
+                        // Check if this cookie string begins with the name we want
+                        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                        }
                     }
                 }
+                return cookieValue;
             }
-            return cookieValue;
-        }
-        //save frame and send to backend
-        saveBtn.addEventListener('click', async function() {
-            this.disabled = true;
-            this.textContent = 'Saving...';
 
-            const title = document.getElementById('title').value;
-            const gameId = document.querySelector('input[name="game-id"]').value;
-            const file = await canvasToFile(canvas, title);
-            const formData = new FormData();
-            formData.append('intentional_save', 'true');
-            formData.append('title', title);
-            formData.append('game-id', gameId);
-            formData.append('image', file);
-
-            const csrftoken = getCookie('csrftoken');
-
-            try {
-                const response = await fetch('/save-frame/', {
-                method: 'POST',
-                headers: {
-                'X-CSRFToken': csrftoken 
-                },
-                body: formData
+            function canvasToFile(canvas, title) {
+                // Get the base64 data from drawingLayer
+                return new Promise((resolve) => {
+                    drawingLayer.toBlob((blob) => {
+                        // Create a File object
+                        const file = new File([blob], `${title}.png`, { type: 'image/png' });
+                        resolve(file);
+                    }, 'image/png');
                 });
-                if (response.redirected) {
-                    window.location.href = response.url;
-                    return;
-                }
+            }
 
 
+            //save canvas to file
+            saveBtn.addEventListener('click', async function() {
+                this.disabled = true;
+                this.textContent = 'Saving...';
+
+                const title = document.getElementById('title').value;
+                const gameId = document.querySelector('input[name="game-id"]').value;
                 
-                // If there's a redirect URL in the response data, use it
-                if (data.redirect_url) {
-                    window.location.href = data.redirect_url;
+                try {
+                    const file = await canvasToFile(drawingLayer, title);  // Use drawingLayer instead of canvas
+                    const formData = new FormData();
+                    formData.append('intentional_save', 'true');
+                    formData.append('title', title);
+                    formData.append('game-id', gameId);
+                    formData.append('image', file);
+
+                    const csrftoken = getCookie('csrftoken');
+
+                    const response = await fetch('/save-frame/', {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': csrftoken 
+                        },
+                        body: formData
+                    });
+
+                    if (response.redirected) {
+                        window.location.href = response.url;
+                        return;
+                    }
+
+                    // Handle the response data if needed
+                    const data = await response.json();
+                    if (data.redirect_url) {
+                        window.location.href = data.redirect_url;
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                } finally {
+                    this.disabled = false;
+                    this.textContent = 'Save and send Image';
                 }
-            } catch (error) {
-            console.error('Error:', error);
-            } finally {
-                this.disabled = false;
-                this.textContent = 'Save'
-            }
             });
-
-        // Drawing functions
-        function draw(e) {
-            if (!isDrawing) return;
-
-            const rect = canvas.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-
-            ctx.lineWidth = brushSize.value;
-            ctx.lineCap = 'round';
-            ctx.lineJoin = 'round';
-
-            if (isErasing) {
-                ctx.strokeStyle = 'white';
-            } else {
-                ctx.strokeStyle = colorPicker.value;
-            }
-
-            ctx.beginPath();
-            ctx.moveTo(lastX, lastY);
-            ctx.lineTo(x, y);
-            ctx.stroke();
-
-            [lastX, lastY] = [x, y];
-        }
-
-        // Event listeners for mouse interactions
-        canvas.addEventListener('mousedown', (e) => {
-            isDrawing = true;
-            const rect = canvas.getBoundingClientRect();
-            [lastX, lastY] = [e.clientX - rect.left, e.clientY - rect.top];
-        });
-
-        canvas.addEventListener('mousemove', draw);
-        canvas.addEventListener('mouseup', () => isDrawing = false);
-        canvas.addEventListener('mouseout', () => isDrawing = false);
-
-        // Prevent default touch behavior to avoid scrolling while drawing
-        canvas.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            const touch = e.touches[0];
-            const mouseEvent = new MouseEvent('mousedown', {
-                clientX: touch.clientX,
-                clientY: touch.clientY
-            });
-            canvas.dispatchEvent(mouseEvent);
-        }, { passive: false });
-
-        canvas.addEventListener('touchmove', (e) => {
-            e.preventDefault();
-            const touch = e.touches[0];
-            const mouseEvent = new MouseEvent('mousemove', {
-                clientX: touch.clientX,
-                clientY: touch.clientY
-            });
-            canvas.dispatchEvent(mouseEvent);
-        }, { passive: false });
-
-        canvas.addEventListener('touchend', () => {
-            const mouseEvent = new MouseEvent('mouseup', {});
-            canvas.dispatchEvent(mouseEvent);
-        });
-
-        function drawPreviousFrame() {
-        if (prevFileUrl) {
-            const backgroundImage = new Image();
-            backgroundImage.crossOrigin = 'Anonymous';
-            backgroundImage.src = prevFileUrl;
-
-            backgroundImage.onload = function () {
-                ctx.globalAlpha = 0.1; // Set opacity to 70%
-                ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height); // Draw the background image
-                ctx.globalAlpha = 1.0; // Reset opacity for drawing other elements
-            };
-        }
-        }
-
-        function initializeCanvasBackground() {
-            ctx.fillStyle = 'white'; // Set the background color to white
-            ctx.fillRect(0, 0, canvas.width, canvas.height); // Fill the canvas with the background color
-
-            drawPreviousFrame(); // Draw the previous frame as a semi-transparent background
-        }
-
-    // Call to initialize the canvas when the page loads
-    initializeCanvasBackground();
 
     </script>
 
