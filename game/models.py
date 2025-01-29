@@ -18,7 +18,7 @@ class Animations(models.Model):
         null=True,
         blank=True
     )
-    animation_file=models.ImageField(storage=MediaCloudinaryStorage(), null=True, blank=True)
+    animation_file=models.FileField(storage=MediaCloudinaryStorage(), null=True, blank=True)
     class Meta:
         ordering = ['-date']
 

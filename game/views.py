@@ -15,6 +15,9 @@ from django.db.models.functions import RowNumber
 from django.utils import timezone
 from django.contrib import messages
 from django.utils.timezone import now
+from .utils import create_and_upload_animation
+import traceback
+
 # Create your views here.
 
 @login_required
@@ -109,8 +112,6 @@ def animate(request, game_id):
                                            'prev_file': file })
 
 
-
-
 @login_required
 def save_frame(request):
     if request.method == 'POST':
@@ -126,7 +127,7 @@ def save_frame(request):
             first_frame = TempFrame.objects.filter(game_id=current_game_id, frame_number=1).first()
         
             last_frame = TempFrame.objects.filter(game_id=current_game_id).order_by('-frame_number').first()
-            
+             
            
             if last_frame:
                 next_frame_number = last_frame.frame_number + 1
@@ -140,7 +141,10 @@ def save_frame(request):
                 user_sender = active_game.user
                 user_recipient = active_game.user_share
                 
-        
+            current_massage = MessageGame.objects.filter(temp_frame=last_frame).first()
+            if current_massage:
+                current_massage.is_read = True
+                current_massage.save()
             
             new_frame = TempFrame(
                 user=request.user,
@@ -288,14 +292,63 @@ def respond(request):
         if not current_massage:
             messages.error(request, "No massage found.")
             return redirect('game:games_on')
-        current_massage.is_read = True
-        current_massage.save()
+        # current_massage.is_read = True
+        # current_massage.save()
         return redirect('game:animate', game_id=game_id)
     
     return redirect('game:games_on')
 
 @login_required
 def finish_animation(request):
-
-
+    if request.method == 'POST':
+        try:
+            game_id = request.POST.get('game-id')
+            frame_per_s = int(request.POST.get('framePerS', 2))
+            print(f"Processing game ID: {game_id} with {frame_per_s} FPS")
+            
+            current_game = ActiveGame.objects.filter(id=game_id).first()
+            
+            if current_game:
+                creator = current_game.user
+                co_creator = current_game.user_share
+                frames = TempFrame.objects.filter(game_id=game_id).order_by('frame_number')
+                
+                print(f"Found {frames.count()} frames")
+                
+                if not frames.exists():
+                    print("No frames found for this game.")
+                    messages.error(request, "No frames found for this game.")
+                    return redirect('users:profile')
+                
+                try:
+                    animation = create_and_upload_animation(
+                        frames=frames,
+                        frame_per_s=frame_per_s,
+                    )
+                    if animation:
+                        new_animation = ActiveGame(
+                            user = current_game.user,
+                            shared_with=current_game.user_share,
+                            animation_file=animation
+                        )
+                        new_animation.save()
+                    
+                    messages.success(request, "Animation created and uploaded successfully.")
+                    
+                except Exception as e:
+                    print(f"Error creating animation:")
+                    print(traceback.format_exc())
+                    messages.error(request, f"Error creating animation: {str(e)}")
+                    
+            else:
+                print("No game found")
+                messages.error(request, "No game found. Animation is not created")
+            
+        except Exception as e:
+            print("Error in finish_animation view:")
+            print(traceback.format_exc())
+            messages.error(request, f"Error processing request: {str(e)}")
+            
+        return redirect('users:profile')
+    
     return redirect('users:profile')

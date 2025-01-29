@@ -8,10 +8,10 @@
 <body>
 
     <div class="paint-container">
-        {% csrf_token %}
+        
             
         <form id="FrameForm" method="POST" action="{% url 'game:save_frame' %}" enctype="multipart/form-data">
-            
+            {% csrf_token %}
             {% if not title %}
  
             <input type="text" id="title" name="title" placeholder="Enter Animation title" required>
@@ -38,7 +38,11 @@
         </form>
         <form method="post" action="{% url 'game:finish' %}">
             {% csrf_token %}
-            <input type="hidden" name="game-id" value="{{ message.game_id }}">
+            <input type="hidden" name="game-id" value="{{ game_id }}">
+            <div class="slidecontainer">
+                <input type="range" min="1" max="24" id="myRange" value="12" name="framePerS">
+                <span id="demo">6</span>
+            </div>
             <button type="submit" name="Finish">Finish Animation</button>
         </form>
     </div>
@@ -54,12 +58,20 @@
             const saveBtn = document.getElementById('saveBtn');
             const prevFileUrl = "{{ prev_file.url }}"; 
 
+            var slider = document.getElementById("myRange");
+            var output = document.getElementById("demo");
+
             let drawingLayer;
             let drawingCtx;
             let isDrawing = false;
             let isErasing = false;
             let lastX = 0;
             let lastY = 0;
+
+
+            slider.oninput = function() {
+                    output.innerHTML = this.value;
+                }
 
             // Create a separate canvas for drawing
             function setupDrawingLayer() {

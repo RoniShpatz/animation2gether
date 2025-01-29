@@ -39,4 +39,4 @@ def debug_template_path(request):
 def profile(request):
 
 
-    return render('profile.html')
+    return render(request, 'profile.html')

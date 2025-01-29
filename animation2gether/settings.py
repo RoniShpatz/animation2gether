@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     'crispy_bootstrap4',
     'django_extensions',
     'rest_framework',
+    'moviepy', 
 
 ]
 
@@ -136,6 +137,9 @@ CLOUDINARY_STORAGE = {
 }
 
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')  # Ensure it exists
+MEDIA_URL = '/media/'
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
