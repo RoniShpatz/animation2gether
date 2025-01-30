@@ -6,7 +6,8 @@ from django.contrib.auth.views import LoginView
 from django.template.loader import get_template
 from django.contrib import messages
 from django.contrib.auth.forms import UserCreationForm
-
+from django.contrib.auth.decorators import login_required
+from game.models import Animations
 # Create your views here.
 
 
@@ -35,8 +36,15 @@ def debug_template_path(request):
     except Exception as e:
         return render(request, 'error.html', {'error': str(e)})
     
-
+@login_required
 def profile(request):
+    current_user = request.user
+    animation_of_user = Animations.objects.filter(user=current_user)
+    animation_with_user = Animations.objects.filter(shared_with=current_user)
+    context = {
+        'my_animations': animation_of_user,
+        'with_animaton': animation_with_user
 
+    }
 
-    return render(request, 'profile.html')
+    return render(request, 'profile.html', context)

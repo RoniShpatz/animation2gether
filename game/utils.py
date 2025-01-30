@@ -1,53 +1,44 @@
-from django.contrib import messages
-from django.shortcuts import redirect
-from cloudinary import uploader
-import os
 from PIL import Image
-import tempfile
+import io
 from typing import List
+from django.core.files.base import ContentFile
 from .models import TempFrame
 
-def create_and_upload_animation(frames: List[TempFrame], frame_per_s: int) -> dict:
+def create_animation(frames: List[TempFrame], frame_per_s: int) -> ContentFile:
     """
-    Creates an animated GIF from frames and uploads it to Cloudinary.
+    Creates an animated GIF from frames and returns it as an in-memory file.
     
     Args:
         frames: List of TempFrame objects
         frame_per_s: Frames per second for the animation
     
     Returns:
-        dict: Cloudinary upload response containing 'secure_url' and 'public_id'
+        ContentFile: In-memory GIF file that can be saved to a model field
     
     Raises:
-        Exception: If there's an error during creation or upload
+        Exception: If there's an error during GIF creation
     """
-    with tempfile.TemporaryDirectory() as temp_dir:
-        # Save frames as images
-        image_files = []
-        for frame in frames:
-            image_path = os.path.join(temp_dir, f'frame_{frame.frame_number}.png')
-            # Read the file field content
-            with open(image_path, 'wb') as f:
-                f.write(frame.file.read())
-                # Reset file pointer for next read
-                frame.file.seek(0)
-            image_files.append(image_path)
-        
-        # Create animated GIF
-        images = []
-        for image_file in image_files:
-            images.append(Image.open(image_file))
-        
-        # Save as temporary GIF
-        gif_path = os.path.join(temp_dir, 'animation.gif')
-        duration = 1000 // frame_per_s  # Convert FPS to duration in milliseconds
-        images[0].save(
-            gif_path,
-            save_all=True,
-            append_images=images[1:],
-            duration=duration,
-            loop=0
-        )
+    if not frames:
+        raise Exception("No frames found to create animation.")
     
-        
-        return gif_path
+    # Convert frames to images
+    images = [Image.open(frame.file) for frame in frames]
+
+    # Set duration for each frame
+    duration = int(1000 / frame_per_s)
+
+    # Save GIF to an in-memory file
+    gif_buffer = io.BytesIO()
+    images[0].save(
+        gif_buffer,
+        format="GIF",
+        save_all=True,
+        append_images=images[1:],
+        optimize=True,
+        duration=duration,
+        loop=0
+    )
+
+    # Create a ContentFile for Django models
+    gif_buffer.seek(0)  # Reset pointer to start of file
+    return ContentFile(gif_buffer.getvalue(), name="animation.gif")

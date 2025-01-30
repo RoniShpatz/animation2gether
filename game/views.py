@@ -15,8 +15,9 @@ from django.db.models.functions import RowNumber
 from django.utils import timezone
 from django.contrib import messages
 from django.utils.timezone import now
-from .utils import create_and_upload_animation
+from .utils import create_animation
 import traceback
+from django.core.files.base import File
 
 # Create your views here.
 
@@ -199,7 +200,8 @@ def games_on(request):
             recipient=request.user,
             game_id__in=ActiveGame.objects.filter(
                 (Q(user=request.user) | Q(user_share=request.user)) & 
-                Q(is_accepted=True)
+                Q(is_accepted=True)  & 
+                Q(is_finished=False)
             ).values('id')
         )
         .annotate(
@@ -222,7 +224,8 @@ def games_on(request):
             sender = request.user,
             game_id__in=ActiveGame.objects.filter(
                 (Q(user=request.user) | Q(user_share=request.user)) & 
-                Q(is_accepted=True)
+                Q(is_accepted=True) & 
+                Q(is_finished=False)
             ).values('id')
         )
         .annotate(
@@ -309,30 +312,26 @@ def finish_animation(request):
             current_game = ActiveGame.objects.filter(id=game_id).first()
             
             if current_game:
-                creator = current_game.user
-                co_creator = current_game.user_share
                 frames = TempFrame.objects.filter(game_id=game_id).order_by('frame_number')
                 
-                print(f"Found {frames.count()} frames")
+                # print(f"Found {frames.count()} frames")
                 
                 if not frames.exists():
-                    print("No frames found for this game.")
+                    # print("No frames found for this game.")
                     messages.error(request, "No frames found for this game.")
                     return redirect('users:profile')
                 
                 try:
-                    animation = create_and_upload_animation(
-                        frames=frames,
-                        frame_per_s=frame_per_s,
+                    animation = create_animation(frames, 5) 
+
+                    new_animation = Animations(
+                        user=current_game.user,
+                        shared_with=current_game.user_share
                     )
-                    if animation:
-                        new_animation = ActiveGame(
-                            user = current_game.user,
-                            shared_with=current_game.user_share,
-                            animation_file=animation
-                        )
-                        new_animation.save()
-                    
+                    new_animation.animation_file.save("animation.gif", animation)
+                    new_animation.save()
+                    current_game.is_finished = True
+                    current_game.save()                   
                     messages.success(request, "Animation created and uploaded successfully.")
                     
                 except Exception as e:
