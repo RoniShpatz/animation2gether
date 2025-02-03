@@ -313,7 +313,7 @@ def finish_animation(request):
             
             if current_game:
                 frames = TempFrame.objects.filter(game_id=game_id).order_by('frame_number')
-                
+                animation_name = TempFrame.objects.filter(game_id=game_id).first()
                 # print(f"Found {frames.count()} frames")
                 
                 if not frames.exists():
@@ -326,7 +326,8 @@ def finish_animation(request):
 
                     new_animation = Animations(
                         user=current_game.user,
-                        shared_with=current_game.user_share
+                        shared_with=current_game.user_share,
+                        animation_name = animation_name.animation_title
                     )
                     new_animation.animation_file.save("animation.gif", animation)
                     new_animation.save()

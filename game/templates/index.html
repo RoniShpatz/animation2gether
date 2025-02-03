@@ -3,11 +3,11 @@
 {% load crispy_forms_tags %}
 
 {% if messages %}
-<ul class="messages">
     {% for message in messages %}
-    <li {% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+        <div class="alert {% if message.tags == 'error' %}alert-danger{% else %}alert-success{% endif %}">
+            {{ message }}
+        </div>
     {% endfor %}
-</ul>
 {% endif %}
 
 {% block content %}

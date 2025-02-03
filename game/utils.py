@@ -21,10 +21,21 @@ def create_animation(frames: List[TempFrame], frame_per_s: int) -> ContentFile:
     if not frames:
         raise Exception("No frames found to create animation.")
     
-    # Convert frames to images
-    images = [Image.open(frame.file) for frame in frames]
+    images = []
+    for frame in frames:
+        # Open the frame
+        original = Image.open(frame.file).convert("RGBA")  # Ensure transparency is handled
+        
+        # Create a white background
+        white_bg = Image.new("RGBA", original.size, (255, 255, 255, 255))
+        
+        # Paste the frame onto the white background
+        white_bg.paste(original, (0, 0), original)
+        
+        # Convert to RGB (no transparency) for GIF
+        images.append(white_bg.convert("RGB"))
 
-    # Set duration for each frame
+    # Set frame duration
     duration = int(1000 / frame_per_s)
 
     # Save GIF to an in-memory file

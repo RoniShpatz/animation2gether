@@ -1,6 +1,14 @@
 {% extends "game/base_generic.html" %}
 {% load crispy_forms_tags %}
 
+{% if messages %}
+    {% for message in messages %}
+        <div class="alert {% if message.tags == 'error' %}alert-danger{% else %}alert-success{% endif %}">
+            {{ message }}
+        </div>
+    {% endfor %}
+{% endif %}
+
 {% block content %}
 <div class="container">
     <h2>Login</h2>  

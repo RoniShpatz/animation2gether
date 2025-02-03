@@ -1,8 +1,36 @@
 body {
     font-family: "Raleway", serif;
     color: black;
-    
+
     
 }
 
+.animation-gallery {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px; 
+    justify-content: center;
+}
 
+.animation-item {
+    width: 250px; 
+    height: 250px; 
+    overflow: hidden; 
+    border-radius: 10px;
+    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.2);
+    text-align: center;
+}
+
+.gif-thumbnail {
+    width: 100%; 
+    height: 100%;
+    object-fit: cover;
+    border-radius: 10px;
+    cursor: pointer; 
+    transition: transform 0.2s ease-in-out;
+}
+
+.gif-thumbnail:hover {
+    transform: scale(1.1); 
+    cursor: pointer;
+}

@@ -1,6 +1,14 @@
 {% extends "game/base_generic.html" %}
 {% block content %}
 
+{% if messages %}
+    {% for message in messages %}
+        <div class="alert {% if message.tags == 'error' %}alert-danger{% else %}alert-success{% endif %}">
+            {{ message }}
+        </div>
+    {% endfor %}
+{% endif %}
+
 <h2>Profile</h2>
 
 <!-- User's Own Animations -->
@@ -10,8 +18,13 @@
         {% for animation in my_animations %}
             {% if animation.animation_file %}
                 <div class="animation-item">
-                    <p>Uploaded on: {{ animation.date|date:"F d, Y H:i" }}</p>
-                    <img src="{{ animation.animation_file.url }}" alt="My Animation" class="gif-animation">
+                    
+                    <h6>{{ animation.animation_name }}</h6>
+                    <form method="get" action="{% url 'users:animation_detail' animation.id %}">
+                        <button type="submit">
+                            <img src="{{ animation.animation_file.url }}" alt="My Animation" class="gif-thumbnail">
+                        </button>
+                    </form>
                 </div>
             {% endif %}
         {% endfor %}
@@ -27,8 +40,13 @@
         {% for animation in with_animaton %}
             {% if animation.animation_file %}
                 <div class="animation-item">
+                    <h6>{{ animation.animation_name }}</h6>
                     <p>Shared by: {{ animation.user.username }}</p>
-                    <img src="{{ animation.animation_file.url }}" alt="Shared Animation" class="gif-animation">
+                    <form method="get" action="{% url 'users:animation_detail' animation.id %}">
+                        <button type="submit">
+                            <img src="{{ animation.animation_file.url }}" alt="Shared Animation" class="gif-thumbnail">
+                        </button>
+                    </form>
                 </div>
             {% endif %}
         {% endfor %}
@@ -36,6 +54,5 @@
 {% else %}
     <p>No animations have been shared with you yet.</p>
 {% endif %}
-
 
 {% endblock %}

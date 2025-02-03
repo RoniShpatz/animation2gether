@@ -138,7 +138,7 @@ CLOUDINARY_STORAGE = {
 
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')  # Ensure it exists
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')  
 MEDIA_URL = '/media/'
 
 # Internationalization

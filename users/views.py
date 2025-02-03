@@ -48,3 +48,28 @@ def profile(request):
     }
 
     return render(request, 'profile.html', context)
+
+
+@login_required
+def animation_detail(request, animation_id):
+    animation = Animations.objects.filter(id=animation_id).first()
+    return render (request, 'animation_detail.html', {'animation': animation})
+
+
+@login_required
+def delete_animation(request, animation_id):
+    if request.method == 'POST':
+        current_aniamtion = Animations.objects.filter(id=animation_id).first()
+        if current_aniamtion:
+            current_aniamtion.delete()
+            messages.success(request, "Animation deleted successfully.")
+            return redirect("users:profile")
+    else: messages.error(request, 'Animaton didnt found')
+    return redirect("profile")
+
+@login_required
+def share_animation(request, animation_id):
+
+
+
+    return redirect("blog:post_list")

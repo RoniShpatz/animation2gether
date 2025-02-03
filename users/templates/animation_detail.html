@@ -1,0 +1,39 @@
+
+{% extends "game/base_generic.html" %}
+{% load crispy_forms_tags %}
+
+{% if messages %}
+    {% for message in messages %}
+        <div class="alert {% if message.tags == 'error' %}alert-danger{% else %}alert-success{% endif %}">
+            {{ message }}
+        </div>
+    {% endfor %}
+{% endif %}
+
+{% block content %}
+<h2>Animation Detail</h2>
+<h3>{{ animation.animation_name }}</h3>
+<p>Uploaded on: {{ animation.date|date:"F d, Y H:i" }}</p>
+<div>
+    <form method="post" action="{% url 'users:delete_animation' animation.id %}">
+        {% csrf_token %}
+          <button type="submit" name="delete">Delete</button>
+        <img src="{{ animation.animation_file.url }}" alt="Full Animation" class="full-animation">
+    </form>
+    <form method="post" action="{% 'blog:' %}">
+        <input type="text" placeholder="Title">
+        <input type="text"  placeholder="Content">
+        <button>Share</button>
+    </form>
+    <a href="{% url 'users:profile' %}">Back to Gallery</a>
+</div>
+
+<style>
+    .full-animation {
+        max-width: 100%;
+        height: auto;
+    }
+</style>
+
+
+{% endblock %}

@@ -1,0 +1,60 @@
+{% extends "game/base_generic.html" %}
+
+
+{% block content %}
+{% if messages %}
+    {% for message in messages %}
+        <div class="alert {% if message.tags == 'error' %}alert-danger{% else %}alert-success{% endif %}">
+            {{ message }}
+        </div>
+    {% endfor %}
+{% endif %}
+
+<h1 class="my-3">Blog Posts</h1>
+
+<div class="row">
+    {% for post in posts %}
+        <div class="col-md-6">
+            <div class="card mb-4 shadow-sm p-3">
+                {% for file in all_files %}
+                    {% if file.user.id == post.author.id %}
+                        <img src="{{ file.file.url }}" alt="Profile" class="img-fluid rounded-circle mb-2" style="width: 50px; height: 50px;">
+                    {% endif %}
+                {% endfor %}
+                
+                <div class="card-body">
+                    {% if post.author == request.user %}
+                        <h4 class="card-title">
+                            <a href="#">{{ post.title }}</a>
+                        </h4>
+                    {% else %}
+                        <h4 class="card-title mb-0">{{ post.title }}</h4>
+                    {% endif %}
+                    
+                    <p class="card-text">{{ post.content }}</p>
+                    
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-muted">
+                            by {{ post.author }} on {{ post.created_at }}
+                        </small>
+                    </div>
+
+                    {% if post.animation and post.animation.file %}
+                        <div class="mt-3">
+                            <img src="{{ post.animation.file.url }}" 
+                                 alt="Animation Image" 
+                                 class="img-fluid rounded" 
+                                 style="max-height: 200px; object-fit: cover;">
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    {% empty %}
+        <div class="col-12">
+            <div class="alert alert-info">No blog posts yet.</div>
+        </div>
+    {% endfor %}
+</div>
+
+{% endblock %}

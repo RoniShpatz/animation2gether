@@ -2,7 +2,13 @@
 {% load crispy_forms_tags %}
 
 {% block content %}
-
+{% if messages %}
+    {% for message in messages %}
+        <div class="alert {% if message.tags == 'error' %}alert-danger{% else %}alert-success{% endif %}">
+            {{ message }}
+        </div>
+    {% endfor %}
+{% endif %}
 
 <h1>Paint:</h1>
 <body>
@@ -36,6 +42,7 @@
 
             </canvas>
         </form>
+        <p>Exit and finish animation</p>
         <form method="post" action="{% url 'game:finish' %}">
             {% csrf_token %}
             <input type="hidden" name="game-id" value="{{ game_id }}">

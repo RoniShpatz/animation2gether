@@ -21,6 +21,7 @@ class Animations(models.Model):
     animation_file=models.FileField(storage=MediaCloudinaryStorage(), null=True, blank=True)
     class Meta:
         ordering = ['-date']
+    animation_name = models.CharField(max_length=20, null=True, blank=True)
 
 
 class ActiveGame(models.Model):
