@@ -12,4 +12,6 @@ urlpatterns = [
     path('profile/', views.profile, name='profile'),
     path('animation/<int:animation_id>/', views.animation_detail, name='animation_detail'),
     path('delete_animation/<int:animation_id>/', views.delete_animation, name='delete_animation'),
+    path('share_animation/<int:animation_id>/', views.share_animation, name='share_animation'),
+    
 ]

@@ -13,7 +13,7 @@ class Animations(models.Model):
     date = models.DateTimeField(auto_now_add=True)
     shared_with = models.ForeignKey(
         User,
-        on_delete=models.SET_NULL,  # If user is deleted, keep the animation but set this to NULL
+        on_delete=models.SET_NULL, 
         related_name='shared_animations',
         null=True,
         blank=True
@@ -22,6 +22,7 @@ class Animations(models.Model):
     class Meta:
         ordering = ['-date']
     animation_name = models.CharField(max_length=20, null=True, blank=True)
+    
 
 
 class ActiveGame(models.Model):

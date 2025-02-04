@@ -8,6 +8,7 @@ from django.contrib import messages
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.decorators import login_required
 from game.models import Animations
+from blog.models import Post
 # Create your views here.
 
 
@@ -69,7 +70,20 @@ def delete_animation(request, animation_id):
 
 @login_required
 def share_animation(request, animation_id):
-
-
-
+    if request.method == 'POST':
+        title = request.POST.get("title", "").strip()
+        content = request.POST.get("content", "").strip()
+        current_aniamtion = Animations.objects.filter(id=animation_id).first()
+        if current_aniamtion:
+           new_post = Post(
+            title = title,
+            content = content,
+            author = request.user,
+            animation= current_aniamtion,  
+           )
+           new_post.save()
+           messages.success(request, "Post created successfully.")
+           return redirect("blog:post_list") 
+        else: messages.error(request, "Invalid request method.")   
+      
     return redirect("blog:post_list")

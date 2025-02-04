@@ -20,9 +20,10 @@
           <button type="submit" name="delete">Delete</button>
         <img src="{{ animation.animation_file.url }}" alt="Full Animation" class="full-animation">
     </form>
-    <form method="post" action="{% 'blog:' %}">
-        <input type="text" placeholder="Title">
-        <input type="text"  placeholder="Content">
+    <form method="post" action="{% url 'users:share_animation' animation.id %}">
+        {% csrf_token %}
+        <input type="text" placeholder="Title" name="title">
+        <input type="text"  placeholder="Content" name="content">
         <button>Share</button>
     </form>
     <a href="{% url 'users:profile' %}">Back to Gallery</a>
