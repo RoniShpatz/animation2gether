@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     'django_extensions',
     'rest_framework',
     'moviepy',
+    'animation2gether',
 
 
 ]
