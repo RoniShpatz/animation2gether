@@ -9,8 +9,50 @@
         </div>
     {% endfor %}
 {% endif %}
+<h2>Edit Post</h2>
 
-<h1>post Detial</h1>
+{% if messages %}
+    {% for message in messages %}
+        <div class="message">{{ message }}</div>
+    {% endfor %}
+{% endif %}
+
+<form method="POST">
+    {% csrf_token %}
+    
+    <div class="form-group">
+        <label for="title">Title:</label>
+        <input type="text" 
+               id="title" 
+               name="title" 
+               value="{{ post.title }}" 
+               required>
+    </div>
+    
+    <div class="form-group">
+        <label for="content">Content:</label>
+        <textarea id="content" 
+                  name="content" 
+                  rows="5" 
+                  required>{{ post.content }}</textarea>
+    </div>
+    
+    {% if post.animation %}
+    <div class="animation-display">
+        <img src="{{ post.animation.animation_file.url }}" 
+             alt="{{ post.animation.animation_name|default:'Animation' }}">
+        {% if post.animation.animation_name %}
+            <p>{{ post.animation.animation_name }}</p>
+        {% endif %}
+    </div>
+    {% endif %}
+    
+    <div class="form-actions">
+        <button type="submit">Save Changes</button>
+        <a href="{% url 'blog:post_list' %}" class="cancel-link">Cancel</a>
+    </div>
+</form>
+</div>
 
 
 

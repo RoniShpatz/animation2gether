@@ -4,7 +4,10 @@ from django import forms
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Submit
 from django.contrib.auth.forms import AuthenticationForm
-
+from PIL import Image, ImageDraw
+from django.core.files.uploadedfile import InMemoryUploadedFile
+from .models import UploadedFile
+import io
 
 class SignUpForm(UserCreationForm):
     email = forms.EmailField(max_length=254)
@@ -21,4 +24,86 @@ class LoginForm(AuthenticationForm):
             'username',
             'password',
             Submit('submit', 'Login', css_class='btn btn-primary')
+        )
+class UserUpdateForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ['username', 'email']  
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        if User.objects.filter(email=email).exists() and self.instance.email != email:
+            raise forms.ValidationError("This email is already in use.")
+        return email
+
+
+class UploadForm(forms.ModelForm):
+    file = forms.ImageField(
+        required=True,
+        widget=forms.FileInput(attrs={'accept': 'image/*'})
+    )
+    class Meta:
+        model = UploadedFile
+        fields = ['file']
+
+    def clean_file(self):
+        # Add extra validation and debugging
+        file = self.cleaned_data.get('file')
+        
+        # # Debug prints
+        # print("File received:", file)
+        # print("File type:", type(file))
+        
+        if not file:
+            print("No file found in cleaned_data")
+            raise forms.ValidationError("No file was uploaded.")
+        
+        # Additional checks if needed
+        if file.size > 5 * 1024 * 1024:  # 5MB limit
+            raise forms.ValidationError("File size must be under 5MB.")
+        
+        return file
+
+    def save(self, commit=True):
+        print("Saving form with commit:", commit)
+        instance = super().save(commit=False)
+
+        uploaded_file = self.cleaned_data.get('file')
+        processed_file = self.resize_and_crop_image(uploaded_file)
+        
+        instance.file = processed_file
+
+        if commit:
+            # print("Attempting to save instance")
+            instance.save()
+        
+        return instance
+    #  Resize and crop an uploaded image to a circular shape
+    def resize_and_crop_image(self, uploaded_file, target_size=(200, 200)):
+        img = Image.open(uploaded_file)
+        
+        if img.mode != 'RGB':
+            img = img.convert('RGB')
+
+        img.thumbnail(target_size, Image.LANCZOS)
+        mask = Image.new('L', img.size, 0)
+        draw = ImageDraw.Draw(mask)
+        draw.ellipse((0, 0, img.width, img.height), fill=255)
+
+        # Apply the mask
+        output = Image.new('RGBA', img.size, (0, 0, 0, 0))
+        output.paste(img, (0, 0), mask)
+
+        # Save to a bytes buffer
+        buffer = io.BytesIO()
+        output.save(buffer, format='PNG')
+        buffer.seek(0)
+
+        # Convert to Django InMemoryUploadedFile
+        return InMemoryUploadedFile(
+            buffer,
+            None,
+            f'{uploaded_file.name.split(".")[0]}_circular.png',
+            'image/png',
+            buffer.getbuffer().nbytes,
+            None
         )

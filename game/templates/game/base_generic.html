@@ -23,6 +23,12 @@
           {% block sidebar %}
           <nav >
             <div >
+            <!-- Profile Image -->
+              {% if files %}
+              {% for file in files %}
+                <img src="{{ file.file.url }}" alt="Profile" class="rounded-circle me-3" style="max-width: 50px; max-height: 50px; object-fit: cover;">
+                {% endfor %}
+                {% endif %}
                 <!-- Navigation Links -->
                 <div class="collapse" >
                     <ul class="navbar-nav">

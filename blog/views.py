@@ -17,13 +17,26 @@ def post_list(request):
 
 @login_required
 def post_edit(request, post_id):
+    current_post = Post.objects.filter(id=post_id).first()
     if request.method == 'POST':
-        current_post = Post.objects.filter(id=post_id).first()
-        if current_post:
-            return render('post_edit.html', {'post':current_post})
-        else:
-            messages.error(request, "Invalid post.")   
-    return redirect('blog:post_list')
+        title = request.POST.get('title', '').strip()
+        content = request.POST.get('content', '').strip()
+
+        # Only update if there's an actual change
+        if title == current_post.title and content == current_post.content:
+            messages.info(request, "No changes detected.")
+            return redirect("blog:post_list")
+
+        if title:
+            current_post.title = title
+        if content:
+            current_post.content = content
+
+        current_post.save()  
+        messages.success(request, "Post updated successfully.")
+        return redirect("blog:post_list")
+
+    return render(request, 'post_edit.html', {'post': current_post})
 
 
 

@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from users.forms import LoginForm
+from users.forms import LoginForm, UploadedFile, UserUpdateForm, UploadForm
 from django.shortcuts import render, redirect
 from django.contrib.auth import login
 from django.contrib.auth.views import LoginView
@@ -9,6 +9,8 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.decorators import login_required
 from game.models import Animations
 from blog.models import Post
+from django.shortcuts import get_object_or_404, redirect
+
 # Create your views here.
 
 
@@ -28,7 +30,7 @@ def signup(request):
 class CustomLoginView(LoginView):
     form_class = LoginForm
     template_name = 'registration/login.html'
-
+    
 
 def debug_template_path(request):
     try:
@@ -42,12 +44,69 @@ def profile(request):
     current_user = request.user
     animation_of_user = Animations.objects.filter(user=current_user)
     animation_with_user = Animations.objects.filter(shared_with=current_user)
+    form = UserUpdateForm(instance=request.user)
+    profile_photo_form = UploadForm()
+    files = UploadedFile.objects.filter(user_id=request.user)
+
+    if request.method == 'POST':
+        if 'upload-profile-photo' in request.POST:
+            profile_photo_form = UploadForm(request.POST, request.FILES)
+            
+            if profile_photo_form.is_valid():
+                try:
+                    uploaded_file = profile_photo_form.save(commit=False)
+                    uploaded_file.user_id = request.user
+                    uploaded_file.save()
+                    messages.success(request, 'Profile photo uploaded successfully!')
+                except Exception as e:
+                    messages.error(request, f'Upload failed: {str(e)}')
+                    # Log the full error for debugging
+                    import logging
+                    logging.error(f"File upload error: {e}")
+            else:
+                # Log form errors
+                messages.error(request, 'Form is invalid')
+                for field, errors in profile_photo_form.errors.items():
+                    messages.error(request, f"{field}: {errors}")
+        elif 'update-profile' in request.POST:
+            form = UserUpdateForm(request.POST, instance=request.user)
+            if form.is_valid():
+                form.save()
+                messages.success(request, 'Your profile has been updated successfully!')
+                return redirect('profile')
+        elif 'update-profile-photo' in request.POST:
+            photo_id = request.POST.get("photo-id")
+            current_photo = get_object_or_404(UploadedFile, id=photo_id)
+            profile_photo_form = UploadForm(request.POST, request.FILES, instance=current_photo)
+            if profile_photo_form.is_valid():
+                profile_photo_form.save()
+                messages.success(request, 'Profile photo updated successfully!')
+            else:
+                messages.error(request, 'Failed to update profile photo.')
+                for field, errors in profile_photo_form.errors.items():
+                    messages.error(request, f"{field}: {errors}")
+
+        elif 'delete-profile-photo' in request.POST:
+            photo_id = request.POST.get("photo-id")
+            try:
+                current_photo = get_object_or_404(UploadedFile, id=photo_id)
+                current_photo.delete()
+                messages.success(request, 'Profile photo deleted successfully!')
+            except Exception as e:
+                messages.error(request, f'Failed to delete profile photo: {str(e)}')
+    
+    else:
+        form = UserUpdateForm(instance=request.user)
+        profile_photo_form = UploadForm()
     context = {
         'my_animations': animation_of_user,
-        'with_animaton': animation_with_user
+        'with_animaton': animation_with_user,
+        'form': form, 
+        'profile_photo_form': profile_photo_form, 
+        'files': files
 
     }
-
+    
     return render(request, 'profile.html', context)
 
 

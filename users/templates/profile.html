@@ -9,8 +9,46 @@
     {% endfor %}
 {% endif %}
 
-<h2>Profile</h2>
+        <h1 class="text-center">{{ user.username|capfirst }} Profile</h1>
+        
+        {% if files %}
+            <h3>Your Uploaded Files:</h3>
+            <div class="row justify-content-center">  
+                {% for file in files %}
+                    <div class="col-md-4 mb-3 text-center">  
+                        <img src="{{ file.file.url }}" alt="Uploaded file" class="img-fluid mb-2">
+                        <form method="POST" enctype="multipart/form-data">
+                            {% csrf_token %}
+                            <input type="hidden" name="photo-id" value="{{ file.id }}">
+                            <input type="file" name="file" accept="image/*" class="form-control mb-2">
+                            <button type="submit" name="update-profile-photo" class="btn btn-primary">Update</button>
+                            <button type="submit" name="delete-profile-photo" class="btn btn-danger">Delete</button>
+                        </form>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
 
+        <p><strong>Username:</strong> {{ user.username|capfirst }}</p>
+        <p><strong>Email:</strong> {{ user.email }}</p>
+        <form method="POST" class="mb-3">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="btn btn-primary" name="update-profile">Save Changes</button>
+        </form>
+
+        {% if files %}
+            <h4>You have a profile photo</h4>
+        {% else %}
+            <h4>Upload profile photo</h4>
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                <input type="file" name="file" accept="image/*" class="form-control mb-2">
+                <button type="submit" name="upload-profile-photo" class="btn btn-success">Upload Photo</button>
+            </form>
+        {% endif %}
+    </div>  
+</div>  
 <!-- User's Own Animations -->
 {% if my_animations %}
     <h3>My Animations</h3>
