@@ -30,7 +30,14 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'your-default-secret-key')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', os.environ.get('RENDER_HOSTNAME', 'animation2gether.onrender.com')]
+
+ALLOWED_HOSTS = [
+    'localhost',
+    '127.0.0.1',
+    os.environ.get('RENDER_HOSTNAME', 'animation2gether.onrender.com'),  # Add your production host here
+    'animation2gether.onrender.com'  # Ensure this is also included explicitly
+]
+# ALLOWED_HOSTS = ['localhost', '127.0.0.1', os.environ.get('RENDER_HOSTNAME', 'animation2gether.onrender.com')]
 
 
 # Application definition
