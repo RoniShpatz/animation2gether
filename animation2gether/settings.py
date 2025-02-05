@@ -30,7 +30,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'your-default-secret-key')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', os.environ.get('RENDER_HOSTNAME', '')]
 
 
 # Application definition
@@ -51,7 +51,8 @@ INSTALLED_APPS = [
     'crispy_bootstrap4',
     'django_extensions',
     'rest_framework',
-    'moviepy', 
+    'moviepy',
+
 
 ]
 
@@ -66,6 +67,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "whitenoise.middleware.WhiteNoiseMiddleware",
 ]
 
 ROOT_URLCONF = 'animation2gether.urls'
@@ -161,6 +163,9 @@ LOGOUT_REDIRECT_URL = 'users:login'
 
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'game'/'static']
+
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+STATIC_ROOT = BASE_DIR / "staticfiles"
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
