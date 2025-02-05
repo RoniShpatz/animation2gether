@@ -6,7 +6,7 @@ from django.contrib.auth import login
 from django.http import JsonResponse
 import requests
 import random
-from .models import TempFrame, ActiveGame, Animations, MessageGame
+from game.models import TempFrame, ActiveGame, Animations, MessageGame
 from django.contrib.auth.models import User
 from django.db.models import Max
 from django.db.models import Q, Window, F, Max

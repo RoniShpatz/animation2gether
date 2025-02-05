@@ -7,6 +7,9 @@ from django.contrib.auth import views as auth_views
 from django.conf import settings
 from django.conf.urls.static import static
 
+
+app_name = 'animation2gether'
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('users/', include('users.urls')),
