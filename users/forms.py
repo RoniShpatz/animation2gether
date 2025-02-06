@@ -83,20 +83,15 @@ class UploadForm(forms.ModelForm):
         
         if img.mode != 'RGB':
             img = img.convert('RGB')
-
         img.thumbnail(target_size, Image.LANCZOS)
-        mask = Image.new('L', img.size, 0)
-        draw = ImageDraw.Draw(mask)
-        draw.ellipse((0, 0, img.width, img.height), fill=255)
-
-        # Apply the mask
-        output = Image.new('RGBA', img.size, (0, 0, 0, 0))
-        output.paste(img, (0, 0), mask)
-
+        new_img = Image.new("RGB", target_size, (255, 255, 255))    
+        paste_position = ((target_size[0] - img.size[0]) // 2, (target_size[1] - img.size[1]) // 2)
+        new_img.paste(img, paste_position)  
         # Save to a bytes buffer
         buffer = io.BytesIO()
-        output.save(buffer, format='PNG')
+        img.save(buffer, format='JPEG', quality=90)  # Save as JPEG with 90% quality
         buffer.seek(0)
+
 
         # Convert to Django InMemoryUploadedFile
         return InMemoryUploadedFile(

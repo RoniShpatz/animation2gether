@@ -34,8 +34,7 @@ DEBUG = True
 ALLOWED_HOSTS = [
     'localhost',
     '127.0.0.1',
-    os.environ.get('RENDER_HOSTNAME', 'animation2gether.onrender.com'),  # Add your production host here
-    'animation2gether.onrender.com'  # Ensure this is also included explicitly
+    os.environ.get('RENDER_HOSTNAME', '') 
 ]
 # ALLOWED_HOSTS = ['localhost', '127.0.0.1', os.environ.get('RENDER_HOSTNAME', 'animation2gether.onrender.com')]
 
@@ -91,6 +90,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'users.context_processors.profile_photo',
             ],
         },
     },

@@ -78,7 +78,9 @@ def profile(request):
             photo_id = request.POST.get("photo-id")
             current_photo = get_object_or_404(UploadedFile, id=photo_id)
             profile_photo_form = UploadForm(request.POST, request.FILES, instance=current_photo)
-            if profile_photo_form.is_valid():
+            if current_photo:
+                current_photo.delete()
+            if profile_photo_form.is_valid(): 
                 profile_photo_form.save()
                 messages.success(request, 'Profile photo updated successfully!')
             else:

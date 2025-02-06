@@ -17,18 +17,18 @@
     <link href="https://fonts.googleapis.com/css2?family=Raleway:ital,wght@0,100..900;1,100..900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
   </head>
   <body>
-    <div class="container-nav">
-      <div class="row">
-        <div class="col-sm-2">
+    <div class="center-page">
+      <div class="all-page">
+        <div >
           {% block sidebar %}
           <nav >
-            <div >
+            <div class="nav-bar">
             <!-- Profile Image -->
-              {% if files %}
-              {% for file in files %}
-                <img src="{{ file.file.url }}" alt="Profile" class="rounded-circle me-3" style="max-width: 50px; max-height: 50px; object-fit: cover;">
-                {% endfor %}
-                {% endif %}
+            {% if profile_photo_url %}
+            <img src="{{ profile_photo_url }}" alt="Profile Photo" class="profile-photo">
+          {% else %}
+              <div class="user-image-none">{{ user.username|first|upper }}</div>
+            {% endif %}
                 <!-- Navigation Links -->
                 <div class="collapse" >
                     <ul class="navbar-nav">
@@ -67,9 +67,14 @@
         </nav>
           {% endblock %}
         </div>
-        <div class="col-sm-12 ">{% block content %}
+        <div class="all-page">{% block content %}
           {% endblock %}</div>
+
+
       </div>
+    </div>
+    <div class="footer">
+
     </div>
   </body>
 </html>
