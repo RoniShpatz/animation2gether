@@ -9,44 +9,58 @@
     {% endfor %}
 {% endif %}
 
-        <h1 class="text-center">{{ user.username|capfirst }} Profile</h1>
-        
-        {% if files %}
-            <h3>Your Uploaded Files:</h3>
-            <div class="row justify-content-center">  
-                {% for file in files %}
-                    <div class="col-md-4 mb-3 text-center">  
-                        <img src="{{ file.file.url }}" alt="Uploaded file" class="img-fluid mb-2">
-                        <form method="POST" enctype="multipart/form-data">
-                            {% csrf_token %}
-                            <input type="hidden" name="photo-id" value="{{ file.id }}">
-                            <input type="file" name="file" accept="image/*" class="form-control mb-2">
-                            <button type="submit" name="update-profile-photo" class="btn btn-primary">Update</button>
-                            <button type="submit" name="delete-profile-photo" class="btn btn-danger">Delete</button>
-                        </form>
-                    </div>
-                {% endfor %}
+<!-- Profile Section -->
+<h1 class="text-center">{{ user.username|capfirst }} Profile</h1>
+
+<!-- Edit Profile Button to Open Modal -->
+<button type="button" class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#profileModal">
+    Edit Profile
+</button>
+
+<!--  Profile Form -->
+<div class="modal fade" id="profileModal" tabindex="-1" aria-labelledby="profileModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="profileModalLabel">Edit Profile</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-        {% endif %}
+            <div class="modal-body">
+                <form method="POST" class="mb-3">
+                    {% csrf_token %}
+                    {{ form.as_p }}
+                    <button type="submit" class="btn btn-primary" name="update-profile">Save Changes</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
 
-        <p><strong>Username:</strong> {{ user.username|capfirst }}</p>
-        <p><strong>Email:</strong> {{ user.email }}</p>
-        <form method="POST" class="mb-3">
-            {% csrf_token %}
-            {{ form.as_p }}
-            <button type="submit" class="btn btn-primary" name="update-profile">Save Changes</button>
-        </form>
-
-        {% if files %}
-            <h4>You have a profile photo</h4>
-        {% else %}
-            <h4>Upload profile photo</h4>
-            <form method="POST" enctype="multipart/form-data">
-                {% csrf_token %}
-                <input type="file" name="file" accept="image/*" class="form-control mb-2">
-                <button type="submit" name="upload-profile-photo" class="btn btn-success">Upload Photo</button>
-            </form>
-        {% endif %} 
+<!-- Profile Picture Upload Section -->
+{% if files %}
+    <h3>Your Profile Photo:</h3>
+    <div class="row justify-content-center">  
+        {% for file in files %}
+            <div class="col-md-4 mb-3 text-center">  
+                <img src="{{ file.file.url }}" alt="Uploaded file" class="img-fluid mb-2">
+                <form method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <input type="hidden" name="photo-id" value="{{ file.id }}">
+                    <input type="file" name="file" accept="image/*" class="form-control mb-2">
+                    <button type="submit" name="update-profile-photo" class="btn btn-primary">Update</button>
+                    <button type="submit" name="delete-profile-photo" class="btn btn-danger">Delete</button>
+                </form>
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <h4>Upload Profile Photo</h4>
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        <input type="file" name="file" accept="image/*" class="form-control mb-2">
+        <button type="submit" name="upload-profile-photo" class="btn btn-success">Upload Photo</button>
+    </form>
+{% endif %}
 <!-- User's Own Animations -->
 {% if my_animations %}
     <h3>My Animations</h3>
@@ -54,7 +68,7 @@
         {% for animation in my_animations %}
             {% if animation.animation_file %}
                 <div class="animation-item">
-                    
+                    <p>Shared with: {{ animation.shared_with.username }}</p>
                     <h6>{{ animation.animation_name }}</h6>
                     <form method="get" action="{% url 'users:animation_detail' animation.id %}">
                         <button type="submit">
@@ -90,5 +104,6 @@
 {% else %}
     <p>No animations have been shared with you yet.</p>
 {% endif %}
+
 
 {% endblock %}

@@ -73,7 +73,6 @@ def profile(request):
             if form.is_valid():
                 form.save()
                 messages.success(request, 'Your profile has been updated successfully!')
-                return redirect('profile')
         elif 'update-profile-photo' in request.POST:
             photo_id = request.POST.get("photo-id")
             current_photo = get_object_or_404(UploadedFile, id=photo_id)

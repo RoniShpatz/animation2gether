@@ -14,19 +14,28 @@
 <h2>Animation Detail</h2>
 <h3>{{ animation.animation_name }}</h3>
 <p>Uploaded on: {{ animation.date|date:"F d, Y H:i" }}</p>
-<div>
-    <form method="post" action="{% url 'users:delete_animation' animation.id %}">
+<div class="container mt-4">
+    <!-- Delete Animation Form -->
+    <form method="post" action="{% url 'users:delete_animation' animation.id %}" class="mb-3">
         {% csrf_token %}
-          <button type="submit" name="delete">Delete</button>
-        <img src="{{ animation.animation_file.url }}" alt="Full Animation" class="full-animation">
+        <button type="submit" name="delete" class="btn btn-danger">Delete</button>
+        <img src="{{ animation.animation_file.url }}" alt="Full Animation" class="full-animation img-fluid mt-2">
     </form>
-    <form method="post" action="{% url 'users:share_animation' animation.id %}">
+
+    <!-- Share Animation Form -->
+    <form method="post" action="{% url 'users:share_animation' animation.id %}" class="mb-3">
         {% csrf_token %}
-        <input type="text" placeholder="Title" name="title">
-        <input type="text"  placeholder="Content" name="content">
-        <button>Share</button>
+        <div class="mb-2">
+            <input type="text" placeholder="Title" name="title" class="form-control form-control-sm">
+        </div>
+        <div class="mb-2">
+            <textarea placeholder="Content" name="content" class="form-control form-control-lg" rows="4"></textarea>
+        </div>
+        <button class="btn btn-primary">Share</button>
     </form>
-    <a href="{% url 'users:profile' %}">Back to Gallery</a>
+
+    <!-- Back to Gallery Link -->
+    <a href="{% url 'users:profile' %}" class="btn btn-secondary">Back to Gallery</a>
 </div>
 
 <style>

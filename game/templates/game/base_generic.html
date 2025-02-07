@@ -14,67 +14,83 @@
     <link rel="stylesheet" href="{% static 'game/css/style.css' %}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Raleway:ital,wght@0,100..900;1,100..900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
   </head>
-  <body>
-    <div class="center-page">
-      <div class="all-page">
-        <div >
-          {% block sidebar %}
-          <nav >
-            <div class="nav-bar">
-            <!-- Profile Image -->
-            {% if profile_photo_url %}
-            <img src="{{ profile_photo_url }}" alt="Profile Photo" class="profile-photo">
-          {% else %}
-              <div class="user-image-none">{{ user.username|first|upper }}</div>
-            {% endif %}
-                <!-- Navigation Links -->
-                <div class="collapse" >
-                    <ul class="navbar-nav">
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'game:index' %}">New Game!</a> 
-                        </li>
-                        <li>
-                          <a href="{% url 'game:games_on' %}">Games Inbox</a>
-                        </li>
-                        <li>
-                          <a href="{% url 'users:profile' %}">My Animations</a>
-                        </li>
-                        <li>
-                          <a href="{% url 'blog:post_list' %}">Animation Blog</a>
-                        </li>
-        
-                    <!-- Authentication Links -->
-                    
-                        {% if user.is_authenticated %}
-                            <li class="nav-item">
-                                <a href="#" class="nav-link" onclick="document.getElementById('logout-form').submit()">
-                                    Logout
-                                </a>
-                                <form id="logout-form" method="POST" action="{% url 'users:logout' %}" class="d-none">
-                                    {% csrf_token %}
-                                </form>
-                            </li>
-                        {% else %}
-                            <li class="nav-item">
-                                <a href="{% url 'users:login' %}" class="nav-link">Login</a>
-                            </li>
-                        {% endif %}
-                   
+    <body>
+        <div class="body">  <!-- All content is now inside this div -->
+            <div class="center-page">
+                <div class="all-page">
+                    <div>
+                        {% block sidebar %}
+                        <nav>
+                          <div class="nav-bar">
+                              <!-- Profile Image Dropdown Trigger -->
+                              <div class="dropdown">
+                                  {% if profile_photo_url %}
+                                      <img src="{{ profile_photo_url }}" 
+                                           alt="Profile Photo" 
+                                           class="profile-photo dropdown-toggle" 
+                                           data-bs-toggle="dropdown" 
+                                           aria-expanded="false">
+                                  {% else %}
+                                      <div class="user-image-none dropdown-toggle" 
+                                           data-bs-toggle="dropdown" 
+                                           aria-expanded="false">
+                                         {{ user.username|first|upper }}
+                                      </div>
+                                  {% endif %}
+                                  
+                                  <!-- Dropdown Menu -->
+                                  <ul class="dropdown-menu">
+                                      <li>
+                                          <a class="dropdown-item" href="{% url 'game:index' %}">New Game!</a>
+                                      </li>
+                                      <li>
+                                          <a class="dropdown-item" href="{% url 'game:games_on' %}">Games Inbox</a>
+                                      </li>
+                                      <li>
+                                          <a class="dropdown-item" href="{% url 'users:profile' %}">My Animations</a>
+                                      </li>
+                                      <li>
+                                          <a class="dropdown-item" href="{% url 'blog:post_list' %}">Animation Blog</a>
+                                      </li>
+                                      <li><hr class="dropdown-divider"></li>
+                                      {% if user.is_authenticated %}
+                                          <li>
+                                              <a class="dropdown-item" href="#" 
+                                                 onclick="document.getElementById('logout-form').submit()">
+                                                  Logout
+                                              </a>
+                                              <form id="logout-form" method="POST" 
+                                                    action="{% url 'users:logout' %}" 
+                                                    class="d-none">
+                                                  {% csrf_token %}
+                                              </form>
+                                          </li>
+                                      {% else %}
+                                          <li>
+                                              <a class="dropdown-item" href="{% url 'users:login' %}">Login</a>
+                                          </li>
+                                      {% endif %}
+                                  </ul>
+                              </div>
+                          </div>
+                      </nav>
+                        {% endblock %}
+                    </div>
+    
+                    <div class="all-page">
+                        {% block content %}{% endblock %}
+                    </div>
                 </div>
             </div>
-        </nav>
-          {% endblock %}
+    
+            <div class="footer"></div>
         </div>
-        <div class="all-page">{% block content %}
-          {% endblock %}</div>
-
-
-      </div>
-    </div>
-    <div class="footer">
-
-    </div>
-  </body>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script> 
+        <script src="{% static 'game/js/script.js' %}"></script>
+    </body>
+    </html>
 </html>
