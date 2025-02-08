@@ -9,49 +9,50 @@
         </div>
     {% endfor %}
 {% endif %}
-<h2>Edit Post</h2>
 
-{% if messages %}
-    {% for message in messages %}
-        <div class="message">{{ message }}</div>
-    {% endfor %}
-{% endif %}
+<div class="container mt-4">
+    <h2 class="text-center mb-4">Edit Post</h2>
 
-<form method="POST">
-    {% csrf_token %}
-    
-    <div class="form-group">
-        <label for="title">Title:</label>
-        <input type="text" 
-               id="title" 
-               name="title" 
-               value="{{ post.title }}" 
-               required>
+    <div class="card p-4 shadow">
+        <form method="POST">
+            {% csrf_token %}
+            
+            <div class="mb-3">
+                <label for="title" class="form-label fw-bold">Title:</label>
+                <input type="text" 
+                       id="title" 
+                       name="title" 
+                       value="{{ post.title }}" 
+                       class="form-control"
+                       required>
+            </div>
+            
+            <div class="mb-3">
+                <label for="content" class="form-label fw-bold">Content:</label>
+                <textarea id="content" 
+                          name="content" 
+                          rows="5" 
+                          class="form-control"
+                          required>{{ post.content }}</textarea>
+            </div>
+
+            {% if post.animation %}
+            <div class="text-center my-3">
+                <img src="{{ post.animation.animation_file.url }}" 
+                     alt="{{ post.animation.animation_name|default:'Animation' }}" 
+                     class="img-fluid rounded">
+                {% if post.animation.animation_name %}
+                    <p class="text-muted mt-2">{{ post.animation.animation_name }}</p>
+                {% endif %}
+            </div>
+            {% endif %}
+            
+            <div class="d-flex justify-content-between">
+                <button type="submit" class="btn btn-lg btn-primary">Save Changes</button>
+                <a href="{% url 'blog:post_list' %}" class="btn btn-lg btn-secondary">Cancel</a>
+            </div>
+        </form>
     </div>
-    
-    <div class="form-group">
-        <label for="content">Content:</label>
-        <textarea id="content" 
-                  name="content" 
-                  rows="5" 
-                  required>{{ post.content }}</textarea>
-    </div>
-    
-    {% if post.animation %}
-    <div class="animation-display">
-        <img src="{{ post.animation.animation_file.url }}" 
-             alt="{{ post.animation.animation_name|default:'Animation' }}">
-        {% if post.animation.animation_name %}
-            <p>{{ post.animation.animation_name }}</p>
-        {% endif %}
-    </div>
-    {% endif %}
-    
-    <div class="form-actions">
-        <button type="submit">Save Changes</button>
-        <a href="{% url 'blog:post_list' %}" class="cancel-link">Cancel</a>
-    </div>
-</form>
 </div>
 
 

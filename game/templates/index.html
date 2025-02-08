@@ -11,37 +11,43 @@
 {% endif %}
 
 {% block content %}
-<h1>Hello  {{ user.username|capfirst }}</h1>
-<div class="artwork-container">
-    {% if error %}
-        <div class="error-message">
-            <p>{{ error }}</p>
-        </div>
-    {% else %}
-        {% if artwork.image_url %}
-            <img src="{{ artwork.image_url }}" alt="{{ artwork.title }}" class="artwork-image">
+<div class="container mt-5">
+    <h1 class="text-center">Hello {{ user.username|capfirst }}</h1>
+    <div class="artwork-container text-center mt-4">
+        {% if error %}
+            <div class="alert alert-danger">
+                <p>{{ error }}</p>
+            </div>
+        {% else %}
+            {% if artwork.image_url %}
+                <img src="{{ artwork.image_url }}" alt="{{ artwork.title }}" class="img-fluid artwork-image mb-3">
+            {% endif %}
+            
+            <h1 class="mt-3">{{ artwork.title }}</h1>
+            
+            {% if artwork.artist %},
+                <h2 class="text-muted">By {{ artwork.artist }}</h2>
+            {% endif %}
+            
+            <form method="post" action="{% url 'game:index' %}" class="mt-4">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-secondary mb-2">Get Another Artwork</button>
+            </form>
+            
+            <form method="POST" action="{% url 'game:create_game' %}" class="mt-4">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="userSelect" class="form-label">Select User:</label>
+                    <select name="username" id="userSelect" class="form-control" required>
+                        <option value="" disabled selected>Select a user</option>  
+                        {% for user in usernames %}
+                            <option value="{{ user }}">{{ user }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <button type="submit" name="start" class="btn btn-primary">Start</button>
+            </form>
         {% endif %}
-        
-        <h1>{{ artwork.title }}</h1>
-        
-        {% if artwork.artist %}
-            <h2>By {{ artwork.artist }}</h2>
-        {% endif %}
-        
-
-        
-        <form method="POST" action="{% url 'game:create_game' %}">
-            {% csrf_token %}
-            <button type="submit">Get Another Artwork</button>
-            <label for="userSelect">Select User:</label>
-            <select name="username" id="userSelect" required>
-                <option value="" disabled selected>Select a user</option>  
-                {% for user in usernames %}
-                    <option value="{{ user}}">{{ user }}</option>
-                {% endfor %}
-            </select>
-            <button type="submit" name="start">Start</button>
-        </form>
-    {% endif %}
+    </div>
 </div>
 {% endblock %}

@@ -8,3 +8,4 @@ document.addEventListener("DOMContentLoaded", function () {
         }, 3000); // Disappear after 3 seconds
     });
 });
+

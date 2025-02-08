@@ -25,6 +25,8 @@ class LoginForm(AuthenticationForm):
             'password',
             Submit('submit', 'Login', css_class='btn btn-primary')
         )
+
+
 class UserUpdateForm(forms.ModelForm):
     class Meta:
         model = User
@@ -83,7 +85,7 @@ class UploadForm(forms.ModelForm):
         
         if img.mode != 'RGB':
             img = img.convert('RGB')
-        img.thumbnail(target_size, Image.LANCZOS)
+        
         new_img = Image.new("RGB", target_size, (255, 255, 255))    
         paste_position = ((target_size[0] - img.size[0]) // 2, (target_size[1] - img.size[1]) // 2)
         new_img.paste(img, paste_position)  

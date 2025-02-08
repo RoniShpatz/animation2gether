@@ -10,13 +10,14 @@
 {% endif %}
 
 {% block content %}
-<div class="container">
+<div class="container" id="login-form">
     <h2>Login</h2>  
     <div >  
-        <form method="post">
+        <form method="post" >
             {% csrf_token %}
             {{ form|crispy }}
             <input type="hidden" name="next" value="{% url 'game:index' %}">
+            <br>
             <button type="submit" class="btn btn-primary">Login</button>
             <p>Don't have an account? <a href="{% url 'users:signup' %}">Signup here</a></p>
         </form>
