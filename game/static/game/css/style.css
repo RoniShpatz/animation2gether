@@ -223,11 +223,9 @@ body html{
     
 }
 @media (max-width: 599px) {
-    .responsive-canvas {
-        height: 40vh;
-    }
+
     #paintCanvas{
-        width: 100vw;
+        
          
     }
 }
