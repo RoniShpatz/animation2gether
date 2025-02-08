@@ -46,7 +46,10 @@
         </div>
 
         <div id="message" class="message mt-2" style="display: none;"></div>
-        <canvas id="paintCanvas" width="600" height="600" style="border: 2px solid #F4538A; border-radius: 10px; margin: 10px;"></canvas>
+        <div class="responsive-canvas">
+            <canvas id="paintCanvas" width="600px" height="600px" style="border: 2px solid #F4538A; border-radius: 10px; margin: 10px;"></canvas>
+        </div>
+        
     <p class="mt-4">Exit and finish animation</p>
     <form method="post" action="{% url 'game:finish' %}">
         {% csrf_token %}
@@ -287,7 +290,24 @@
                     this.textContent = 'Save and send Image';
                 }
             });
+ 
+            function resizeCanvas() {
+        const canvas = document.getElementById("paintCanvas");
+        const parent = canvas.parentElement;
 
+        if (window.innerWidth < 600) {
+            canvas.width = parent.clientWidth;
+            canvas.height = parent.clientHeight;
+        } else {
+            // Reset to default size if needed (optional)
+            canvas.width = 600;  // Your default width
+            canvas.height = 600; // Your default height
+        }
+    }
+
+    // Only trigger when screen is resized
+    window.addEventListener("resize", resizeCanvas);
+    window.addEventListener("load", resizeCanvas);
     </script>
 
 
