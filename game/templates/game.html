@@ -291,23 +291,7 @@
                 }
             });
  
-            function resizeCanvas() {
-        const canvas = document.getElementById("paintCanvas");
-        const parent = canvas.parentElement;
 
-        if (window.innerWidth < 600) {
-            canvas.width = parent.clientWidth;
-            canvas.height = parent.clientHeight;
-        } else {
-            // Reset to default size if needed (optional)
-            canvas.width = 600;  // Your default width
-            canvas.height = 600; // Your default height
-        }
-    }
-
-    // Only trigger when screen is resized
-    window.addEventListener("resize", resizeCanvas);
-    window.addEventListener("load", resizeCanvas);
     </script>
 
 
